@@ -3,13 +3,13 @@ import "./App.css";
 import { useRef } from "react";
 
 function App() {
-  const fileInputRef = useRef();
+  // const fileInputRef = useRef();
 
   return (
     <div className="App">
       <h1>Bitmap Parser</h1>
       <div className="card">
-        <input type="file" ref={fileInputRef} />
+        <input type="file" />
         <button>Parse Bitmap</button>
         <p>
           Upload a <code>Bitmap (*.bmp)</code> to see the bitmap drawn in the
