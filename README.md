@@ -36,6 +36,12 @@ struct BMP_FILEHEADER {
 };
 ```
 
+We, then check the validity of the BMP file with BMP Signature, i.e.
+
+```c
+0x4d42; // little endian
+```
+
 #### **Bitmap Image Header**
 
 DIB Header contains detailed information about the image, which is used to parse and display image properly. The size of this header differs from version and type of the BMP. The first 4 bytes of this header tells the size of the header.
