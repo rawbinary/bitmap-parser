@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import "./App.css";
 import { useRef } from "react";
+
+import { parseBitmap } from "../lib/bitmap";
 
 function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -18,7 +20,8 @@ function App() {
     // Reading File
     const reader = new FileReader();
     reader.onload = () => {
-      console.log(reader.result);
+      const bmp = parseBitmap(reader.result as ArrayBuffer);
+      // console.log(bmp);
     };
 
     reader.readAsArrayBuffer(fileItem);
