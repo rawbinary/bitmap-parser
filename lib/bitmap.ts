@@ -60,8 +60,33 @@ const BitmapFileHeaderStruct = {
   BitsOffset: BufferStructure.Types.uint32,
 };
 
+const BitmapHeaderStruct = {
+  // Size of this Header Block
+  HeaderSize: BufferStructure.Types.uint32,
+  // Width of Image in Pixels
+  Width: BufferStructure.Types.int32,
+  // Height of Image in Pixels
+  Height: BufferStructure.Types.int32,
+  // Numver of color planes
+  ColorPlanes: BufferStructure.Types.uint16,
+  // Number of bits per pixel [usually 8, 16, 24 and 32]
+  BitDepth: BufferStructure.Types.uint16,
+  // Compression Method used
+  CompressionMethod: BufferStructure.Types.uint32,
+  // Size of the Bitmap Pixel Data
+  ImageSize: BufferStructure.Types.uint32,
+  // Horizontal res; pixel per meter (signed integer)
+  PixPerMeterX: BufferStructure.Types.int32,
+  // Vertical res; pixel mer meter (signed integer) [pixel data generally flipped vertically]
+  PixPerMeterY: BufferStructure.Types.int32,
+  // no. of colors in color palette
+  ColorCount: BufferStructure.Types.uint32,
+  // no. of imp. colors, or 0 if all important; usually ignored
+  ImpColorCount: BufferStructure.Types.uint32,
+};
+
 export function parseBitmap(bitmapBuffer: ArrayBuffer) {
-  // Bitmap Signature [in Small Endian]
+  // Bitmap Signature [in little Endian]
   const bmpSignature = 0x4d42;
 
   // Reading BMP File Struct
@@ -74,4 +99,10 @@ export function parseBitmap(bitmapBuffer: ArrayBuffer) {
   // First 2 bytes in the buffer are BMP Signature
   if (byteArrayToInt(bmpFileHeader.Signature) !== bmpSignature)
     throw "Invalid BMP Buffer. Not a valid BMP File";
+
+  const bmpHeader = BufferStructure.from(
+    bitmapBuffer,
+    getStructSize(BitmapFileHeaderStruct),
+    BitmapHeaderStruct
+  );
 }
