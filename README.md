@@ -2,6 +2,8 @@
 
 A typescript implementation of Bitmap Parser, and visualiser for Bitmap in HTML5 Canvas.
 
+**See Demo at: https://bitmap-parser.robin.md**
+
 ## Why?
 
 Why not. This is a bitmap parser written in Typescript for me to understand how Bitmaps and basically how digital image files work, how they're compressed, uncompressed, stored, encoded, decoded, parsed, etc.
