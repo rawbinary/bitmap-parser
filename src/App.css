@@ -14,3 +14,23 @@
 .card {
   padding: 2em;
 }
+
+.App {
+  display: grid;
+  padding: 20px;
+}
+
+canvas {
+  border: 1px solid #f00;
+}
+
+#info {
+  text-align: center;
+  margin: 0px auto 0px;
+}
+
+td {
+  margin: 0;
+  border: 1px solid #fff;
+  padding: 0 20px 0;
+}
