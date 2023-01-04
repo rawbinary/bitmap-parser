@@ -141,7 +141,7 @@ export function parseBitmap(bitmapBuffer: ArrayBuffer) {
   const lineWidth = ((WIDTH * BIT_DEPTH) / 8 + 3) & ~3;
 
   // Pixel Data Processing
-  let BitmapData: any[] = [];
+  let BitmapData: string[][] = [];
 
   let offset = 0;
   for (let i = 0; i < HEIGHT; i++) {
