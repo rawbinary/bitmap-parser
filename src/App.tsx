@@ -20,8 +20,46 @@ function App() {
     // Reading File
     const reader = new FileReader();
     reader.onload = () => {
-      const bmp = parseBitmap(reader.result as ArrayBuffer);
-      // console.log(bmp);
+      try {
+        const bmp = parseBitmap(reader.result as ArrayBuffer);
+
+        // fill table with info
+        const table = document.createElement("table");
+        for (let prop of Object.keys(bmp)) {
+          let tr = document.createElement("tr");
+          let td1 = document.createElement("td");
+          let td2 = document.createElement("td");
+          let text1 = document.createTextNode(prop);
+          let text2 = document.createTextNode((bmp as any)[prop] as string);
+          td1.appendChild(text1);
+          td2.appendChild(text2);
+          tr.appendChild(td1);
+          tr.appendChild(td2);
+
+          table.appendChild(tr);
+        }
+        document.getElementById("info")?.appendChild(table);
+
+        const pixelData = bmp.BitmapHexValues();
+
+        // Create image in canvas
+        const canvas = document.getElementById(
+          "displayer"
+        ) as HTMLCanvasElement;
+        canvas.height = bmp.Height;
+        canvas.width = bmp.Width;
+        console.log(pixelData);
+        const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+
+        for (let i = 0; i < bmp.Height; i++) {
+          for (let j = 0; j < bmp.Width; j++) {
+            ctx.fillStyle = "#" + pixelData[i][j];
+            ctx.fillRect(j, i, 1, 1);
+          }
+        }
+      } catch (error) {
+        alert(error);
+      }
     };
 
     reader.readAsArrayBuffer(fileItem);
@@ -39,6 +77,7 @@ function App() {
         </p>
       </div>
       <canvas id="displayer"></canvas>
+      <div id="info"></div>
     </div>
   );
 }
