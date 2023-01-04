@@ -49,6 +49,19 @@ function getStructSize(struct: Record<string, number>) {
   return totSize;
 }
 
+enum CompressionMethod {
+  BI_RGB,
+  BI_RLE8,
+  BI_RLE4,
+  BI_BITFIELDS,
+  BI_JPEG,
+  BI_PNG,
+  BI_ALPHABITFIELDS,
+  BI_CMYK = 11,
+  BI_CMYKRLE8 = 12,
+  BI_CMYKRLE4 = 13,
+}
+
 const BitmapFileHeaderStruct = {
   // Signature of the File
   Signature: BufferStructure.Types.uint16,
@@ -105,4 +118,80 @@ export function parseBitmap(bitmapBuffer: ArrayBuffer) {
     getStructSize(BitmapFileHeaderStruct),
     BitmapHeaderStruct
   );
+
+  const COLOR_COUNT = byteArrayToInt(bmpHeader.ColorCount);
+  //   if (COLOR_COUNT !== 0) {
+  //     throw "Unsupported Color Count.";
+  //   }
+
+  const COMPRESSION = byteArrayToInt(bmpHeader.CompressionMethod);
+  // TODO: Currently only supports uncompressed BMPs; planned support for compressed in future
+  if (COMPRESSION !== CompressionMethod.BI_RGB) {
+    throw "Unsupported Compression Method";
+  }
+
+  // Pixel Array
+  const WIDTH = Math.abs(byteArrayToInt(bmpHeader.Width));
+  const HEIGHT = Math.abs(byteArrayToInt(bmpHeader.Height));
+  const BIT_DEPTH = byteArrayToInt(bmpHeader.BitDepth);
+
+  const pixelArrayOffset = byteArrayToInt(bmpFileHeader.BitsOffset);
+  const pixelArrayBuffer = bitmapBuffer.slice(pixelArrayOffset);
+
+  const lineWidth = ((WIDTH * BIT_DEPTH) / 8 + 3) & ~3;
+
+  // Pixel Data Processing
+  let BitmapData: any[] = [];
+
+  let offset = 0;
+  for (let i = 0; i < HEIGHT; i++) {
+    let lineBuffer = pixelArrayBuffer.slice(offset, offset + lineWidth);
+    offset += lineWidth;
+
+    // Get the Hex String, split it every 6 chars (which is RGB Hex color code of pixel for 24-bit BMP) [4 x 6 for BGRA Channel]
+    const LineHexArray = splitInto(buf2hex(new Uint8Array(lineBuffer)), 6);
+
+    // Since the RGB is flipped i.e. BGR (we reverse it)
+    const RGBLineHexArray = LineHexArray.map((x) => {
+      return splitInto(x, 2).reverse().join("");
+    });
+    BitmapData.push(RGBLineHexArray);
+  }
+
+  BitmapData.reverse();
+
+  return {
+    Signature: new TextDecoder().decode(bmpFileHeader.Signature),
+    Size: byteArrayToInt(bmpFileHeader.Size),
+    Reserved: buf2hex(new Uint8Array(bmpFileHeader.Reserved)),
+    BitsOffset: pixelArrayOffset,
+    HeaderSize: byteArrayToInt(bmpHeader.HeaderSize),
+    Width: WIDTH,
+    Height: HEIGHT,
+    ColorPlanes: byteArrayToInt(bmpHeader.ColorPlanes),
+    BitDepth: BIT_DEPTH,
+    ImageSize: byteArrayToInt(bmpHeader.ImageSize),
+    CompressionMethod: getCompressionMethod(COMPRESSION),
+    PixPerMeterX: byteArrayToInt(bmpHeader.PixPerMeterX),
+    PixPerMeterY: byteArrayToInt(bmpHeader.PixPerMeterY),
+    ColorCount: COLOR_COUNT,
+    ImpColorCount: byteArrayToInt(bmpHeader.ImpColorCount),
+    BitmapHexValues: () => BitmapData as string[][],
+  };
+}
+
+function splitInto(str: string, len: number) {
+  var regex = new RegExp(".{" + len + "}|.{1," + Number(len - 1) + "}", "g");
+  return str.match(regex) as string[];
+}
+
+function getCompressionMethod(method: number) {
+  return CompressionMethod[method];
+}
+
+function buf2hex(buffer: Uint8Array) {
+  // buffer is an ArrayBuffer
+  return [...new Uint8Array(buffer)]
+    .map((x) => x.toString(16).padStart(2, "0"))
+    .join("");
 }
