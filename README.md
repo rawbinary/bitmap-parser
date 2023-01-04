@@ -105,7 +105,6 @@ BitmapData.reverse();
 
 - React for Web Interface of Demo App
 - Vite for Build Tooling
-- Tailwind for web interface design system
 - Typescript
 
 ## Getting Started
@@ -116,6 +115,8 @@ Setup
 1. `npm install`
 1. Run dev server `npm run dev`
 
-```
+## References
 
-```
+[Bitmap File Structure, at digicamsoft.com](https://www.digicamsoft.com/bmp/bmp.html)
+
+[The BMP File Format, Part 1 By David Charlap at Dr. Dobb's journal of software tools (drdobbs.com), March 1995](https://drdobbs.com/architecture-and-design/the-bmp-file-format-part-1/184409517)
