@@ -120,45 +120,82 @@ export function parseBitmap(bitmapBuffer: ArrayBuffer) {
   );
 
   const COLOR_COUNT = byteArrayToInt(bmpHeader.ColorCount);
-  //   if (COLOR_COUNT !== 0) {
-  //     throw "Unsupported Color Count.";
-  //   }
-
   const COMPRESSION = byteArrayToInt(bmpHeader.CompressionMethod);
+
   // TODO: Currently only supports uncompressed BMPs; planned support for compressed in future
-  if (COMPRESSION !== CompressionMethod.BI_RGB) {
-    throw "Unsupported Compression Method";
+  const SUPPORTED = [0];
+  if (!SUPPORTED.includes(COMPRESSION)) {
+    throw "Unsupported Compression Method. Only Supported methods are BI_RGB";
   }
 
-  // Pixel Array
   const WIDTH = Math.abs(byteArrayToInt(bmpHeader.Width));
   const HEIGHT = Math.abs(byteArrayToInt(bmpHeader.Height));
   const BIT_DEPTH = byteArrayToInt(bmpHeader.BitDepth);
 
+  // Color Tables
+  let colorTableSize = 0;
+  if (BIT_DEPTH == 1) colorTableSize = 2;
+  else if (BIT_DEPTH == 4) colorTableSize = 16;
+  else if (BIT_DEPTH == 8) colorTableSize = 256;
+
+  console.log(BIT_DEPTH, getCompressionMethod(COMPRESSION));
+
+  const colorTable = bitmapBuffer.slice(
+    getStructSize(BitmapHeaderStruct),
+    getStructSize(BitmapFileHeaderStruct) + colorTableSize * 4
+  );
+
+  // Pixel Array
   const pixelArrayOffset = byteArrayToInt(bmpFileHeader.BitsOffset);
   const pixelArrayBuffer = bitmapBuffer.slice(pixelArrayOffset);
 
   const lineWidth = ((WIDTH * BIT_DEPTH) / 8 + 3) & ~3;
 
   // Pixel Data Processing
-  let BitmapData: string[][] = [];
+  let BitmapData: string[] = [];
 
-  let offset = 0;
-  for (let i = 0; i < HEIGHT; i++) {
-    let lineBuffer = pixelArrayBuffer.slice(offset, offset + lineWidth);
-    offset += lineWidth;
+  if (COMPRESSION === CompressionMethod.BI_RGB) {
+    let offset = 0;
+    for (let i = 0; i < HEIGHT; i++) {
+      let lineBuffer = pixelArrayBuffer.slice(offset, offset + lineWidth);
+      offset += lineWidth;
 
-    // Get the Hex String, split it every 6 chars (which is RGB Hex color code of pixel for 24-bit BMP) [4 x 6 for BGRA Channel]
-    const LineHexArray = splitInto(buf2hex(new Uint8Array(lineBuffer)), 6);
+      // Get the Hex String, split it every (bitdepth / 4) chars (e.g. which is RGB Hex color code of pixel for 24-bit BMP) [4 x 6 for BGRA Channel]
+      let depthNum = BIT_DEPTH / 4;
+      let LineHexArray: string[] = [];
 
-    // Since the RGB is flipped i.e. BGR (we reverse it)
-    const RGBLineHexArray = LineHexArray.map((x) => {
-      return splitInto(x, 2).reverse().join("");
-    });
-    BitmapData.push(RGBLineHexArray);
+      if (BIT_DEPTH == 1) {
+        throw "1-bit BMP not yet supported.";
+      } else if (BIT_DEPTH == 4) {
+        throw "4-bit BMP not yet supported.";
+      } else if (BIT_DEPTH == 8) {
+        throw "8-bit BMP not yet supported.";
+      } else if (BIT_DEPTH == 16) {
+        throw "16-bit BMP not yet supported.";
+      } else if (BIT_DEPTH == 24) {
+        LineHexArray = splitInto(
+          buf2hex(new Uint8Array(lineBuffer)),
+          depthNum
+        ).map((x) => {
+          return splitInto(x, 2).reverse().join("");
+        });
+      } else if (BIT_DEPTH == 32) {
+        LineHexArray = splitInto(
+          buf2hex(new Uint8Array(lineBuffer)),
+          depthNum
+        ).map((x) => {
+          let buff = splitInto(x, 2).reverse();
+          buff.shift();
+          return buff.join("");
+        });
+      }
+
+      BitmapData.push(...LineHexArray.slice(0, WIDTH).reverse());
+    }
+    BitmapData.reverse();
   }
 
-  BitmapData.reverse();
+  // BitmapData.reverse();
 
   return {
     Signature: new TextDecoder().decode(bmpFileHeader.Signature),
@@ -176,7 +213,7 @@ export function parseBitmap(bitmapBuffer: ArrayBuffer) {
     PixPerMeterY: byteArrayToInt(bmpHeader.PixPerMeterY),
     ColorCount: COLOR_COUNT,
     ImpColorCount: byteArrayToInt(bmpHeader.ImpColorCount),
-    BitmapHexValues: () => BitmapData as string[][],
+    BitmapHexValues: () => BitmapData as string[],
   };
 }
 

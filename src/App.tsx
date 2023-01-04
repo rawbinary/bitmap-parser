@@ -48,17 +48,20 @@ function App() {
         ) as HTMLCanvasElement;
         canvas.height = bmp.Height;
         canvas.width = bmp.Width;
-        console.log(pixelData);
+        // console.log(pixelData);
         const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 
+        let offset = 0;
         for (let i = 0; i < bmp.Height; i++) {
           for (let j = 0; j < bmp.Width; j++) {
-            ctx.fillStyle = "#" + pixelData[i][j];
+            ctx.fillStyle = "#" + pixelData[offset];
             ctx.fillRect(j, i, 1, 1);
+            offset++;
           }
         }
       } catch (error) {
         alert(error);
+        throw error;
       }
     };
 
