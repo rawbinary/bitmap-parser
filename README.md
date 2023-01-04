@@ -79,27 +79,27 @@ We take a basic and simple approach of taking the pixel data of the row, and get
 Using this color values, we then created a canvas of size of BMP, then filled it with rectangles of `1px x 1px` with RGB Hex color value generate for every pixel. This will render the parsed BMP into the canvas.
 
 ```js
-  // Pixel Data Processing
-  let BitmapData: string[][] = [];
+// Pixel Data Processing
+let BitmapData: string[][] = [];
 
-  let offset = 0;
-  for (let i = 0; i < HEIGHT; i++) {
-    let lineBuffer = pixelArrayBuffer.slice(offset, offset + lineWidth);
-    offset += lineWidth;
+let offset = 0;
+for (let i = 0; i < HEIGHT; i++) {
+  let lineBuffer = pixelArrayBuffer.slice(offset, offset + lineWidth);
+  offset += lineWidth;
 
-    // Get the Hex String, split it every 6 chars (which is RGB Hex color code of pixel for 24-bit BMP)
-	// [3 x 8 for BGR Channel, remaing byte is ignored as padding]
-    const LineHexArray = splitInto(buf2hex(new Uint8Array(lineBuffer)), 6);
+  // Get the Hex String, split it every 6 chars (which is RGB Hex color code of pixel for 24-bit BMP)
+  // [3 x 8 for BGR Channel, remaing byte is ignored as padding]
+  const LineHexArray = splitInto(buf2hex(new Uint8Array(lineBuffer)), 6);
 
-    // Since the RGB is flipped i.e. BGR (we reverse it)
-    const RGBLineHexArray = LineHexArray.map((x) => {
-      return splitInto(x, 2).reverse().join("");
-    });
-    BitmapData.push(RGBLineHexArray);
-  }
-  // Finally flipping the Pixel Data; as pixel array is "bottom-up"
-  BitmapData.reverse();
-``
+  // Since the RGB is flipped i.e. BGR (we reverse it)
+  const RGBLineHexArray = LineHexArray.map((x) => {
+    return splitInto(x, 2).reverse().join("");
+  });
+  BitmapData.push(RGBLineHexArray);
+}
+// Finally flipping the Pixel Data; as pixel array is "bottom-up"
+BitmapData.reverse();
+```
 
 ## Tools Used
 
@@ -115,4 +115,7 @@ Setup
 1. Clone repo
 1. `npm install`
 1. Run dev server `npm run dev`
+
+```
+
 ```
