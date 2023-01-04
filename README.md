@@ -70,6 +70,37 @@ struct BMP_HEADER {
 
 After reading the required data from the header, we skip all other headers to directly read from the pixel data offset we received from `BMP_FILEHEADER.BitsOffset` value.
 
+The Pixel data is a block of 32-bit DWORDs. Usually pixels are stored "bottom-up", starting from lower-left corner, going from left to right. So, at the end of everything, we reverse the pixel array to make it straight.
+
+Padding bytes must be appended to the end of the rows in order to bring up the length of the rows to a multiple of four bytes. When the pixel array is loaded into memory, each row must begin at a memory address that is a multiple of 4. This address/offset restriction is mandatory only for pixel arrays loaded in memory. For file storage purposes, only the size of each row must be a multiple of 4 bytes while the file offset can be arbitrary. A 24-bit bitmap with Width=1, would have 3 bytes of data per row (blue, green, red) and 1 byte of padding, while Width=2 would have 6 bytes of data and 2 bytes of padding, Width=3 would have 9 bytes of data and 3 bytes of padding, and Width=4 would have 12 bytes of data and no padding.
+
+We take a basic and simple approach of taking the pixel data of the row, and getting its hex-value string and spliting it every 6 characters, which shall give the `BBGGRR` value of the pixels. Then transforming that into `RRGGBB`, it'd be similar to a RGB Hex color value.
+
+Using this color values, we then created a canvas of size of BMP, then filled it with rectangles of `1px x 1px` with RGB Hex color value generate for every pixel. This will render the parsed BMP into the canvas.
+
+```js
+  // Pixel Data Processing
+  let BitmapData: string[][] = [];
+
+  let offset = 0;
+  for (let i = 0; i < HEIGHT; i++) {
+    let lineBuffer = pixelArrayBuffer.slice(offset, offset + lineWidth);
+    offset += lineWidth;
+
+    // Get the Hex String, split it every 6 chars (which is RGB Hex color code of pixel for 24-bit BMP)
+	// [3 x 8 for BGR Channel, remaing byte is ignored as padding]
+    const LineHexArray = splitInto(buf2hex(new Uint8Array(lineBuffer)), 6);
+
+    // Since the RGB is flipped i.e. BGR (we reverse it)
+    const RGBLineHexArray = LineHexArray.map((x) => {
+      return splitInto(x, 2).reverse().join("");
+    });
+    BitmapData.push(RGBLineHexArray);
+  }
+  // Finally flipping the Pixel Data; as pixel array is "bottom-up"
+  BitmapData.reverse();
+``
+
 ## Tools Used
 
 - React for Web Interface of Demo App
@@ -84,3 +115,4 @@ Setup
 1. Clone repo
 1. `npm install`
 1. Run dev server `npm run dev`
+```
