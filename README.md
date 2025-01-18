@@ -2,7 +2,7 @@
 
 A typescript implementation of Bitmap Parser, and visualiser for Bitmap in HTML5 Canvas.
 
-**See Demo at: https://bitmap-parser.robin.md**
+**See Demo at: https://bitmap-parser.ruw.sh**
 
 ## Why?
 
